@@ -145,9 +145,9 @@ public class MovementAIRigidbody : MonoBehaviour
         if(is3D)
         {
             Debug.DrawLine(origin, origin + (Vector3.ProjectOnPlane(velocity, movementNormal).normalized), Color.magenta, 0f, false);
-            Debug.DrawLine(origin, origin + (realVelocity.normalized), Color.green, 0f, false);
-            Debug.DrawLine(origin, origin + (wallNormal), Color.yellow, 0f, false);
-            Debug.DrawLine(origin, origin + (movementNormal), Color.yellow, 0f, false);
+            Debug.DrawLine(origin, origin + (realVelocity.normalized), Color.green, Mathf.Infinity, false);
+            //Debug.DrawLine(origin, origin + (wallNormal), Color.yellow, 0f, false);
+            Debug.DrawLine(origin, origin + (movementNormal), Color.yellow, Mathf.Infinity, false);
         }
 
         //Debug.Log("waitforfixedupdate " + transform.position.ToString("f4"));
@@ -298,15 +298,15 @@ public class MovementAIRigidbody : MonoBehaviour
 
             if (i == 0)
             {
-                Debug.DrawRay(origin + Vector3.up * 0.05f * countDebug, direction, new Color(0.953f, 0.898f, 0.961f), 0f, false);
+                Debug.DrawRay(origin + Vector3.up * 0.05f * countDebug, direction, new Color(0.953f, 0.898f, 0.961f), Mathf.Infinity, false);
             }
             else if (i == 1)
             {
-                Debug.DrawRay(origin + Vector3.up * 0.05f * countDebug, direction, new Color(0.612f, 0.153f, 0.69f), 0f, false);
+                Debug.DrawRay(origin + Vector3.up * 0.05f * countDebug, direction, new Color(0.612f, 0.153f, 0.69f), Mathf.Infinity, false);
             }
             else
             {
-                Debug.DrawRay(origin + Vector3.up * 0.05f * countDebug, direction, new Color(0.29f, 0.078f, 0.549f), 0f, false);
+                Debug.DrawRay(origin + Vector3.up * 0.05f * countDebug, direction, new Color(0.29f, 0.078f, 0.549f), Mathf.Infinity, false);
             }
 
             RaycastHit hitInfo;
@@ -314,7 +314,7 @@ public class MovementAIRigidbody : MonoBehaviour
             /* Spherecast in the direction we are moving and check if we will hit a wall. Also check that we are
              * in fact moving into the wall (it seems that it is possible to clip the corner of a wall even 
              * though the char/spherecast is moving away from the wall) */
-            if (sphereCast(direction, out hitInfo, dist, groundCheckMask.value) && isWall(hitInfo.normal)
+            if (sphereCast(direction, out hitInfo, dist, groundCheckMask.value, movementNormal) && isWall(hitInfo.normal)
                 && isMovingInto(direction, hitInfo.normal))
             {
                 Vector3 projectedVel = limitVelocityOnWall(rb3D.velocity, hitInfo.normal);
@@ -366,7 +366,15 @@ public class MovementAIRigidbody : MonoBehaviour
         {
             Vector3 groundPlaneIntersection = Vector3.Cross(movementNormal, planeNormal);
 
+            Vector3 foo = Vector3.Project(velocity, groundPlaneIntersection);
+
+            //velocity = Vector3.ProjectOnPlane(velocity, planeNormal);
+
+            velocity.y = 0;
             velocity = Vector3.Project(velocity, groundPlaneIntersection);
+            velocity = velocity.normalized * foo.magnitude;
+
+            //Debug.Log(foo.ToString("f4") + " " + velocity.ToString("f4"));
 
             /* Don't move up the intersecting line if it is greater than our slope limit */
             if (Vector3.Angle(velocity, Vector3.up) < 90f - slopeLimit)
