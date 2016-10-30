@@ -27,7 +27,14 @@ public class DebugSphereCast : MonoBehaviour {
             SteeringBasics.debugCross(hitPosition, 0.5f, Color.yellow);
             SteeringBasics.debugCross(hitSphereCenter, 0.5f, Color.red);
 
-            if(isWall(hitInfo.normal))
+            RaycastHit hitInfo2;
+            if (Physics.Raycast(transform.position, (hitPosition - transform.position).normalized, out hitInfo2, Mathf.Infinity))
+            {
+                Debug.DrawLine(transform.position, transform.position + (hitInfo2.normal * 2), Color.red, 0f, false);
+                Debug.Log(hitInfo2.normal.ToString("f4") + " " + Vector3.Angle(Vector3.up, hitInfo2.normal) + " " + isWall(hitInfo2.normal));
+            }
+
+            if (isWall(hitInfo.normal))
             {
                 /* Get vector pointing down the slope) */
                 Vector3 rightSlope = Vector3.Cross(hitInfo.normal, Vector3.down);

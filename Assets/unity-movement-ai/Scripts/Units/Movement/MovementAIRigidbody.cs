@@ -147,7 +147,7 @@ public class MovementAIRigidbody : MonoBehaviour
             Debug.DrawLine(origin, origin + (Vector3.ProjectOnPlane(velocity, movementNormal).normalized), Color.magenta, 0f, false);
             Debug.DrawLine(origin, origin + (realVelocity.normalized), Color.green, 0f, false);
             Debug.DrawLine(origin, origin + (wallNormal), Color.yellow, 0f, false);
-            Debug.DrawLine(origin, origin + (movementNormal), Color.yellow, 0f, false);
+            Debug.DrawLine(origin, origin + (movementNormal), Color.yellow, Mathf.Infinity, false);
         }
 
         //Debug.Log("waitforfixedupdate " + transform.position.ToString("f4"));
@@ -193,7 +193,7 @@ public class MovementAIRigidbody : MonoBehaviour
                     if (remainingDist > 0 && sphereCast(downSlope, out downWallHit, remainingDist, groundCheckMask.value, downHit.normal) && !isWall(downWallHit.normal))
                     {
                         Vector3 newPos = rb3D.position + (downSlope.normalized * downWallHit.distance);
-                        foundGround(downWallHit.normal, newPos);
+                        foundGround(downWallHit.normal, newPos, downWallHit.point);
                     }
 
                     /* If we are close enough to the hit to be touching it then we are on the wall */
@@ -207,7 +207,7 @@ public class MovementAIRigidbody : MonoBehaviour
                 else
                 {
                     Vector3 newPos = rb3D.position + (Vector3.down * downHit.distance);
-                    foundGround(downHit.normal, newPos);
+                    foundGround(downHit.normal, newPos, downHit.point);
                     //SteeringBasics.debugCross(hitInfo.point + Vector3.up * (hitInfo.distance - 0.1f), 0.5f, Color.red, 0, false);
                 }
             }
@@ -233,7 +233,7 @@ public class MovementAIRigidbody : MonoBehaviour
          * from the plane to avoid problems when the given dir is just barely moving  
          * into the plane (this can occur due to floating point inaccuracies when the 
          * dir is calculated with cross products) */
-        Vector3 origin = colliderPosition + (planeNormal * 0.001f);
+        Vector3 origin = colliderPosition + (planeNormal * 0.051f);
 
         /* Start the ray with a small offset from inside the character, so it will
          * hit any colliders that the character is already touching. */
@@ -253,11 +253,19 @@ public class MovementAIRigidbody : MonoBehaviour
         }
     }
 
-    private void foundGround(Vector3 normal, Vector3 newPos)
+    private void foundGround(Vector3 normal, Vector3 newPos, Vector3 hitPos)
     {
         movementNormal = normal;
         rb3D.useGravity = false;
         rb3D.MovePosition(newPos);
+
+        RaycastHit hitInfo;
+        if(Physics.Raycast(colliderPosition, (hitPos - colliderPosition).normalized, out hitInfo, Mathf.Infinity, groundCheckMask.value))
+        {
+            Debug.DrawLine(colliderPosition, colliderPosition + (hitInfo.normal*2), Color.red, Mathf.Infinity, false);
+            movementNormal = hitInfo.normal;
+        }
+
         /* Reproject the velocity onto the ground plane in case the ground plane has changed this frame.
          * Make sure to multiple by the movement velocity's magnitude, rather than the actual velocity
          * since we could have been falling and now found ground so all the downward y velocity is not
@@ -314,7 +322,7 @@ public class MovementAIRigidbody : MonoBehaviour
             /* Spherecast in the direction we are moving and check if we will hit a wall. Also check that we are
              * in fact moving into the wall (it seems that it is possible to clip the corner of a wall even 
              * though the char/spherecast is moving away from the wall) */
-            if (sphereCast(direction, out hitInfo, dist, groundCheckMask.value) && isWall(hitInfo.normal)
+            if (sphereCast(direction, out hitInfo, dist, groundCheckMask.value, movementNormal) && isWall(hitInfo.normal)
                 && isMovingInto(direction, hitInfo.normal))
             {
                 Vector3 projectedVel = limitVelocityOnWall(rb3D.velocity, hitInfo.normal);
