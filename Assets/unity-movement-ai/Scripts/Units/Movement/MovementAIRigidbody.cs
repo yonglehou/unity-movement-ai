@@ -193,7 +193,7 @@ public class MovementAIRigidbody : MonoBehaviour
                     if (remainingDist > 0 && sphereCast(downSlope, out downWallHit, remainingDist, groundCheckMask.value, downHit.normal) && !isWall(downWallHit.normal))
                     {
                         Vector3 newPos = rb3D.position + (downSlope.normalized * downWallHit.distance);
-                        foundGround(downWallHit.normal, newPos);
+                        foundGround(downWallHit.normal, newPos, downWallHit.point);
                     }
 
                     /* If we are close enough to the hit to be touching it then we are on the wall */
@@ -207,7 +207,7 @@ public class MovementAIRigidbody : MonoBehaviour
                 else
                 {
                     Vector3 newPos = rb3D.position + (Vector3.down * downHit.distance);
-                    foundGround(downHit.normal, newPos);
+                    foundGround(downHit.normal, newPos, downHit.point);
                     //SteeringBasics.debugCross(hitInfo.point + Vector3.up * (hitInfo.distance - 0.1f), 0.5f, Color.red, 0, false);
                 }
             }
@@ -253,11 +253,19 @@ public class MovementAIRigidbody : MonoBehaviour
         }
     }
 
-    private void foundGround(Vector3 normal, Vector3 newPos)
+    private void foundGround(Vector3 normal, Vector3 newPos, Vector3 hitPos)
     {
         movementNormal = normal;
         rb3D.useGravity = false;
         rb3D.MovePosition(newPos);
+
+        RaycastHit hitInfo;
+        if (Physics.Raycast(colliderPosition, (hitPos - colliderPosition).normalized, out hitInfo, Mathf.Infinity, groundCheckMask.value))
+        {
+            Debug.DrawLine(colliderPosition, colliderPosition + (hitInfo.normal * 2), Color.red, 0f, false);
+            movementNormal = hitInfo.normal;
+        }
+
         /* Reproject the velocity onto the ground plane in case the ground plane has changed this frame.
          * Make sure to multiple by the movement velocity's magnitude, rather than the actual velocity
          * since we could have been falling and now found ground so all the downward y velocity is not
