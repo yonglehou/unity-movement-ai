@@ -362,18 +362,21 @@ public class MovementAIRigidbody : MonoBehaviour
 
     private Vector3 limitVelocityOnWall(Vector3 velocity, Vector3 planeNormal)
     {
+        Vector3 rightSlope = Vector3.Cross(planeNormal, Vector3.down);
+
         if (!rb3D.useGravity)
         {
             Vector3 groundPlaneIntersection = Vector3.Cross(movementNormal, planeNormal);
 
             float mag = Vector3.Project(velocity, groundPlaneIntersection).magnitude;
+
             velocity.y = 0;
+            velocity = Vector3.Project(velocity, rightSlope).normalized;
             velocity = Vector3.Project(velocity, groundPlaneIntersection).normalized * mag;
         }
         else
         {
             /* Get vector pointing down the slope) */
-            Vector3 rightSlope = Vector3.Cross(planeNormal, Vector3.down);
             Vector3 downSlope = Vector3.Cross(rightSlope, planeNormal);
 
             /* Keep any downward movement (like gravity) */
