@@ -370,6 +370,9 @@ public class MovementAIRigidbody : MonoBehaviour
 
             float mag = Vector3.Project(velocity, groundPlaneIntersection).magnitude;
 
+            /* Make sure the direction against the wall is dictated by the X/Z direction of the
+             * character and the wall normal. So even when the character's ground normal changes
+             * the direction it is moving against the wall is not changed. */
             velocity.y = 0;
             velocity = Vector3.Project(velocity, rightSlope).normalized;
             velocity = Vector3.Project(velocity, groundPlaneIntersection).normalized * mag;
