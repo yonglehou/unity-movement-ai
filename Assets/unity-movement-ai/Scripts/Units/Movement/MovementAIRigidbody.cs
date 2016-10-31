@@ -366,8 +366,9 @@ public class MovementAIRigidbody : MonoBehaviour
         {
             Vector3 groundPlaneIntersection = Vector3.Cross(movementNormal, planeNormal);
 
+            float mag = Vector3.Project(velocity, groundPlaneIntersection).magnitude;
             velocity.y = 0;
-            velocity = Vector3.Project(velocity, groundPlaneIntersection);
+            velocity = Vector3.Project(velocity, groundPlaneIntersection).normalized * mag;
         }
         else
         {
