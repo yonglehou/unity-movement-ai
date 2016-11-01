@@ -146,8 +146,8 @@ public class MovementAIRigidbody : MonoBehaviour
         {
             Debug.DrawLine(origin, origin + (Vector3.ProjectOnPlane(velocity, movementNormal).normalized), Color.magenta, 0f, false);
             Debug.DrawLine(origin, origin + (realVelocity.normalized), Color.green, 0f, false);
-            //Debug.DrawLine(origin, origin + (wallNormal), Color.yellow, 0f, false);
-            Debug.DrawLine(origin, origin + (movementNormal), Color.yellow, 0f, false);
+            Debug.DrawLine(origin, origin + (wallNormal), Color.yellow, 0f, false);
+            //Debug.DrawLine(origin, origin + (movementNormal), Color.yellow, 0f, false);
         }
 
         //Debug.Log("waitforfixedupdate " + transform.position.ToString("f4"));
@@ -155,6 +155,7 @@ public class MovementAIRigidbody : MonoBehaviour
         //Debug.Log(movementNormal.ToString("f4"));
         //Debug.Log("--------------------------------------------------------------------------------");
         //SteeringBasics.debugCross(colliderPosition, 0.5f, Color.red, 0, false);
+        //Debug.Log(rb3D.velocity.y + " " + count);
 
         countDebug = 0;
         StartCoroutine(debugDraw());
@@ -259,12 +260,12 @@ public class MovementAIRigidbody : MonoBehaviour
         rb3D.useGravity = false;
         rb3D.MovePosition(newPos);
 
-        RaycastHit hitInfo;
-        if (Physics.Raycast(colliderPosition, (hitPos - colliderPosition).normalized, out hitInfo, Mathf.Infinity, groundCheckMask.value))
-        {
-            Debug.DrawLine(colliderPosition, colliderPosition + (hitInfo.normal * 2), Color.red, 0f, false);
-            movementNormal = hitInfo.normal;
-        }
+        //RaycastHit hitInfo;
+        //if (Physics.Raycast(colliderPosition, (hitPos - colliderPosition).normalized, out hitInfo, Mathf.Infinity, groundCheckMask.value) && !isWall(hitInfo.normal))
+        //{
+        //    Debug.DrawLine(colliderPosition, colliderPosition + (hitInfo.normal * 2), Color.red, 0f, false);
+        //    movementNormal = hitInfo.normal;
+        //}
 
         /* Reproject the velocity onto the ground plane in case the ground plane has changed this frame.
          * Make sure to multiple by the movement velocity's magnitude, rather than the actual velocity
@@ -376,12 +377,16 @@ public class MovementAIRigidbody : MonoBehaviour
         {
             Vector3 groundPlaneIntersection = Vector3.Cross(movementNormal, planeNormal);
 
-            float mag = Vector3.Project(velocity, groundPlaneIntersection).magnitude;
+            //float mag = velocity.magnitude;
+            //float mag = Vector3.Project(velocity, groundPlaneIntersection).magnitude;
+            float mag = Vector3.Project(velocity, rightSlope).magnitude;
 
             /* Make sure the direction against the wall is dictated by the X/Z direction of the
              * character and the wall normal. So even when the character's ground normal changes
              * the direction it is moving against the wall is not changed. */
             velocity.y = 0;
+            //mag = Mathf.Cos(Vector3.Angle(velocity, rightSlope) * Mathf.Deg2Rad) * mag;
+            //Debug.Log(Mathf.Cos(Vector3.Angle(velocity, rightSlope) * Mathf.Deg2Rad) + " " + Vector3.Angle(velocity, rightSlope) + " " + rightSlope.ToString("f4"));
             velocity = Vector3.Project(velocity, rightSlope).normalized;
             velocity = Vector3.Project(velocity, groundPlaneIntersection).normalized * mag;
         }
