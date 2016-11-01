@@ -386,7 +386,9 @@ public class MovementAIRigidbody : MonoBehaviour
              * the direction it is moving against the wall is not changed. */
             velocity.y = 0;
             //mag = Mathf.Cos(Vector3.Angle(velocity, rightSlope) * Mathf.Deg2Rad) * mag;
-            //Debug.Log(Mathf.Cos(Vector3.Angle(velocity, rightSlope) * Mathf.Deg2Rad) + " " + Vector3.Angle(velocity, rightSlope) + " " + rightSlope.ToString("f4"));
+            //Debug.Log(Mathf.Cos(Vector3.Angle(velocity, rightSlope) * Mathf.Deg2Rad) + " " + Vector3.Angle(velocity, rightSlope) + " " + rightSlope.ToString("f4"));.
+            Debug.Log(mag == Vector3.Project(velocity, rightSlope).magnitude); //Always true if this is the correct way to get mag then I should probably refactor code to not project onto right slope twice
+
             velocity = Vector3.Project(velocity, rightSlope).normalized;
             velocity = Vector3.Project(velocity, groundPlaneIntersection).normalized * mag;
         }
